@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TurboTráfego Studio</title>
+<style>
+  :root {
+    --gold: #B8860B;
+    --gold-light: #D4A017;
+    --gold-pale: rgba(184,134,11,0.15);
+    --black: #1A1A1A;
+    --dark: #242424;
+    --surface: #2E2E2E;
+    --surface2: #383838;
+    --border: rgba(184,134,11,0.30);
+    --text: #F0EDE8;
+    --muted: #A09880;
+    --muted2: #6B6560;
+    --green: #0F6E56;
+    --green-bg: rgba(15,110,86,0.15);
+    --red: #C04020;
+    --red-bg: rgba(210,80,30,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111111;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+
+  #app {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--black);
+    flex-shrink: 0; letter-spacing: -0.5px;
+  }
+  .header-text h1 { font-size: 16px; font-weight: 600; color: var(--gold); letter-spacing: 0.05em; }
+  .header-text p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .header-badges { margin-left: auto; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .badge {
+    font-size: 10px; padding: 2px 9px;
+    border-radius: 6px; border: 0.5px solid;
+    display: flex; align-items: center; gap: 4px;
+    font-weight: 500;
+  }
+  .badge-gold { background: var(--gold-pale); border-color: var(--border); color: var(--gold-light); }
+  .badge-green { background: var(--green-bg); border-color: rgba(15,110,86,0.35); color: #1DB890; }
+
+  /* API KEY */
+  .apikey-bar {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .8rem 1.1rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .apikey-bar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .apikey-bar input {
+    flex: 1; background: var(--surface); border: 0.5px solid var(--surface2);
+    color: var(--text); border-radius: 7px; padding: 6px 10px; font-size: 12px;
+    font-family: monospace;
+  }
+  .apikey-bar input:focus { outline: none; border-color: var(--gold); }
+  .apikey-status { font-size: 10px; white-space: nowrap; }
+  .apikey-status.ok { color: #1DB890; }
+  .apikey-status.err { color: var(--red); }
+
+  /* NAV */
+  .nav {
+    display: flex; gap: 5px; margin-bottom: 1rem;
+    background: var(--dark); border-radius: 12px;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    padding: 5px;
+  }
+  .nav-btn {
+    flex: 1; padding: 8px 4px;
+    border: none; border-radius: 8px;
+    font-size: 10px; font-weight: 600;
+    cursor: pointer; background: transparent;
+    color: var(--muted); transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    letter-spacing: 0.02em;
+  }
+  .nav-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn.active {
+    background: var(--black);
+    color: var(--gold);
+    border: 0.5px solid var(--border);
+  }
+  .nav-btn:hover:not(.active) { background: var(--surface); color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; flex-direction: column; gap: 10px; }
+  .panel.active { display: flex; }
+
+  /* CARDS */
+  .card {
+    background: var(--black);
+    border-radius: 12px;
+    border: 0.5px solid rgba(255,255,255,0.07);
+    padding: 1rem 1.2rem;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 600;
+    color: var(--muted); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .card-title svg { width: 14px; height: 14px; stroke: var(--gold); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* NICHO GRID */
+  .nicho-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 10px; }
+  .nicho-btn {
+    padding: 10px 6px; border-radius: 9px;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    background: var(--dark); cursor: pointer;
+    font-size: 11px; font-weight: 500; color: var(--muted);
+    text-align: center; transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .nicho-btn .icon { font-size: 22px; }
+  .nicho-btn:hover { border-color: var(--gold); color: var(--text); }
+  .nicho-btn.sel { background: rgba(184,134,11,0.12); border-color: var(--gold); color: var(--gold); }
+
+  /* FORMATO */
+  .formato-grid { display: flex; gap: 7px; margin-bottom: 10px; }
+  .formato-btn {
+    flex: 1; padding: 10px 6px; border-radius: 9px;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    background: var(--dark); cursor: pointer;
+    font-size: 11px; font-weight: 500; color: var(--muted);
+    text-align: center; transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .formato-btn .icon { font-size: 20px; }
+  .formato-btn:hover { border-color: var(--gold); color: var(--text); }
+  .formato-btn.sel { background: rgba(184,134,11,0.12); border-color: var(--gold); color: var(--gold); }
+
+  /* TOPICOS */
+  .topico-list { display: flex; flex-direction: column; gap: 5px; }
+  .topico-item {
+    padding: 9px 12px; border-radius: 8px;
+    border: 0.5px solid rgba(255,255,255,0.07);
+    background: var(--dark); cursor: pointer;
+    font-size: 12px; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+    transition: all .15s; line-height: 1.4;
+  }
+  .topico-item:hover { border-color: var(--gold); background: var(--surface); }
+  .topico-item.sel { border-color: var(--gold); background: rgba(184,134,11,0.1); color: var(--gold); }
+  .topico-tag {
+    font-size: 9px; padding: 2px 7px; border-radius: 5px;
+    font-weight: 600; margin-left: 8px; white-space: nowrap; flex-shrink: 0;
+  }
+  .tag-hot { background: var(--red-bg); color: var(--red); }
+  .tag-trend { background: var(--gold-pale); color: var(--gold); }
+  .tag-legal { background: var(--green-bg); color: #1DB890; }
+
+  /* FORM ELEMENTS */
+  label.lbl { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; font-weight: 500; }
+  input[type=text], input[type=password], select, textarea {
+    width: 100%; background: var(--surface); border: 0.5px solid var(--surface2);
+    color: var(--text); border-radius: 8px; padding: 8px 10px;
+    font-size: 12px; font-family: inherit; margin-bottom: 8px;
+    transition: border-color .15s;
+  }
+  input[type=text]:focus, input[type=password]:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--gold);
+  }
+  select option { background: var(--dark); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* BUTTONS */
+  .btn-gold {
+    width: 100%; padding: 11px; background: var(--gold);
+    color: var(--black); border: none; border-radius: 9px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: opacity .15s; letter-spacing: 0.01em;
+  }
+  .btn-gold:hover { opacity: .88; }
+  .btn-gold:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-outline {
+    width: 100%; padding: 9px; background: transparent;
+    color: var(--muted); border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 8px; font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .15s; font-family: inherit;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-sm {
+    font-size: 11px; padding: 5px 11px;
+    border: 0.5px solid rgba(255,255,255,0.1);
+    background: transparent; color: var(--muted);
+    border-radius: 7px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+    transition: all .15s; font-family: inherit;
+  }
+  .btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* TOGGLES */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05);
+  }
+  .toggle-row:last-child { border: none; }
+  .toggle-label { font-size: 12px; color: var(--text); }
+  .toggle-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--surface2); border-radius: 10px; transition: .3s;
+  }
+  .toggle-slider:before {
+    position: absolute; content: "";
+    height: 14px; width: 14px; left: 3px; bottom: 3px;
+    background: white; border-radius: 50%; transition: .3s;
+  }
+  input:checked + .toggle-slider { background: var(--gold); }
+  input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+  /* GEN OPTIONS */
+  .gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+  .gen-opt {
+    padding: 10px 8px; border-radius: 9px;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    background: var(--dark); cursor: pointer;
+    font-size: 11px; font-weight: 500; color: var(--muted);
+    text-align: center; transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .gen-opt .icon { font-size: 22px; }
+  .gen-opt:hover { border-color: var(--gold); color: var(--text); }
+  .gen-opt.sel { background: rgba(184,134,11,0.12); border-color: var(--gold); color: var(--gold); }
+
+  /* OUTPUT */
+  .output-tabs { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
+  .output-tab {
+    padding: 5px 11px; border-radius: 7px;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    background: transparent; font-size: 11px; cursor: pointer;
+    color: var(--muted); transition: all .15s; font-family: inherit;
+  }
+  .output-tab.active { background: rgba(184,134,11,0.12); color: var(--gold); border-color: var(--border); }
+  .output-box {
+    background: var(--dark); border: 0.5px solid rgba(255,255,255,0.07);
+    border-radius: 9px; padding: .9rem;
+    font-size: 12px; line-height: 1.8; color: var(--text);
+    white-space: pre-wrap; min-height: 120px; max-height: 340px; overflow-y: auto;
+  }
+  .output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+
+  /* SCORE BAR */
+  .score-bar { height: 5px; background: var(--surface2); border-radius: 3px; margin: 5px 0 10px; overflow: hidden; }
+  .score-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width .6s ease; }
+
+  /* PROGRESS */
+  .prog-steps { display: flex; flex-direction: column; gap: 7px; margin: 8px 0; }
+  .pstep { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted2); }
+  .pstep-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 10px; font-weight: 600;
+  }
+  .pstep.done .pstep-dot { background: var(--gold); border-color: var(--gold); color: var(--black); }
+  .pstep.active .pstep-dot { border-color: var(--gold); color: var(--gold); }
+  .pstep.active { color: var(--text); }
+
+  /* LOADING */
+  .dots { display: inline-flex; gap: 4px; align-items: center; }
+  .dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); animation: bop 1.2s infinite;
+  }
+  .dots span:nth-child(2) { animation-delay: .2s; }
+  .dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes bop { 0%,80%,100% { transform: scale(.55); opacity: .5; } 40% { transform: scale(1); opacity: 1; } }
+
+  /* WEB INDICATOR */
+  .web-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; color: #1DB890;
+    background: var(--green-bg); border: 0.5px solid rgba(15,110,86,.35);
+    border-radius: 6px; padding: 3px 8px; margin-bottom: 8px;
+  }
+  .web-dot { width: 6px; height: 6px; border-radius: 50%; background: #1DB890; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+  /* DIM TABLE */
+  .dim-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .dim-table th { text-align: left; font-weight: 600; color: var(--muted); padding: 4px 8px; border-bottom: 0.5px solid rgba(255,255,255,0.07); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .dim-table td { padding: 7px 8px; color: var(--text); border-bottom: 0.5px solid rgba(255,255,255,0.05); }
+  .dim-table tr:last-child td { border: none; }
+  .dh { color: var(--gold); font-weight: 500; }
+
+  /* NOTA */
+  .nota {
+    background: rgba(184,134,11,0.07); border: 0.5px solid rgba(184,134,11,.2);
+    border-radius: 8px; padding: 9px 11px;
+    font-size: 11px; color: var(--muted); line-height: 1.65;
+  }
+  .nota strong { color: var(--gold); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">TT</div>
+    <div class="header-text">
+      <h1>TURBOTRÁFEGO STUDIO</h1>
+      <p>Copy · SEO · Criativos · Inteligência de Mercado</p>
+    </div>
+    <div class="header-badges">
+      <div class="badge badge-gold">v3.1</div>
+      <div class="badge badge-green">
+        <div class="web-dot"></div> Web Search ON
+      </div>
+    </div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="apikey-bar">
+    <label>🔑 API Key Anthropic:</label>
+    <input type="password" id="api-key" placeholder="sk-ant-..." oninput="checkKey()" />
+    <span class="apikey-status" id="key-status">Introduz a tua chave</span>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="goTab('nicho')" id="nav-nicho">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      <span>Nicho</span>
+    </button>
+    <button class="nav-btn" onclick="goTab('mercado')" id="nav-mercado">
+      <svg viewBox="0 0 24 24"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/><polyline points="16,7 22,7 22,13"/></svg>
+      <span>Mercado</span>
+    </button>
+    <button class="nav-btn" onclick="goTab('criativo')" id="nav-criativo">
+      <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      <span>Criativo</span>
+    </button>
+    <button class="nav-btn" onclick="goTab('dimensoes')" id="nav-dimensoes">
+      <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      <span>Dimensões</span>
+    </button>
+    <button class="nav-btn" onclick="goTab('gerar')" id="nav-gerar">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span>Gerar</span>
+    </button>
+  </div>
+
+  <!-- PAINEL NICHO -->
+  <div class="panel active" id="panel-nicho">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Escolhe o nicho
+      </div>
+      <div class="nicho-grid">
+        <button class="nicho-btn sel" onclick="pickNicho(this,'Clínicas de Estética')"><div class="icon">✨</div><span>Estética</span></button>
+        <button class="nicho-btn" onclick="pickNicho(this,'Clínicas de Saúde')"><div class="icon">🏥</div><span>Saúde</span></button>
+        <button class="nicho-btn" onclick="pickNicho(this,'Wellness & Bem-Estar')"><div class="icon">🧘</div><span>Wellness</span></button>
+        <button class="nicho-btn" onclick="pickNicho(this,'Imobiliário')"><div class="icon">🏢</div><span>Imobiliário</span></button>
+        <button class="nicho-btn" onclick="pickNicho(this,'Apoio Domiciliário')"><div class="icon">🏠</div><span>Domiciliário</span></button>
+        <button class="nicho-btn" onclick="pickNicho(this,'Marketing Digital')"><div class="icon">📊</div><span>Marketing</span></button>
+      </div>
+      <label class="lbl">Nicho personalizado:</label>
+      <input type="text" id="nicho-custom" placeholder="Ex: Fisioterapia, Coaching, Nutrição...">
+      <button class="btn-gold" onclick="confirmarNicho()">→ Confirmar nicho e carregar tópicos</button>
+    </div>
+
+    <div class="card" id="topicos-card" style="display:none">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        Tópicos quentes
+      </div>
+      <div class="web-indicator"><div class="web-dot"></div> Pesquisado em tempo real via Web Search</div>
+      <div id="t-loading" style="display:none;padding:1.2rem 0;text-align:center">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">A pesquisar tendências e mercado em tempo real...</div>
+      </div>
+      <div class="topico-list" id="t-list"></div>
+      <div style="margin-top:9px;display:flex;gap:7px">
+        <button class="btn-outline" onclick="carregarTopicosWeb()" style="flex:1">↻ Atualizar via web</button>
+        <button class="btn-outline" onclick="goTab('criativo')" style="flex:1">→ Ir para criativo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL MERCADO -->
+  <div class="panel" id="panel-mercado">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/></svg>
+        Inteligência de mercado
+      </div>
+      <div class="web-indicator"><div class="web-dot"></div> Pesquisa em tempo real para Portugal, 2025</div>
+      <label class="lbl">Nicho ativo: <span id="mkt-nicho" style="color:var(--gold);font-weight:600">Clínicas de Estética</span></label>
+      <div style="margin-bottom:9px"></div>
+      <button class="btn-gold" onclick="pesquisarMercado()" id="btn-mercado">🔍 Pesquisar agora</button>
+      <div id="mercado-loading" style="display:none;padding:1rem;text-align:center;margin-top:8px">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">A pesquisar tendências, normas legais e digital do nicho...</div>
+      </div>
+      <div id="mercado-output" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- PAINEL CRIATIVO -->
+  <div class="panel" id="panel-criativo">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+        Formato
+      </div>
+      <div class="formato-grid">
+        <button class="formato-btn sel" onclick="pickFormato(this,'Reels')"><div class="icon">▶️</div><span>Reels</span></button>
+        <button class="formato-btn" onclick="pickFormato(this,'Estático')"><div class="icon">🖼️</div><span>Estático</span></button>
+        <button class="formato-btn" onclick="pickFormato(this,'Carrossel')"><div class="icon">📱</div><span>Carrossel</span></button>
+      </div>
+      <label class="lbl">Tópico / Gancho:</label>
+      <textarea id="c-topico" placeholder="Ex: Como a IA pode triplicar os leads de uma clínica em 30 dias..."></textarea>
+      <label class="lbl">Tom de voz:</label>
+      <select id="c-tom">
+        <option>Direto e provocador</option>
+        <option>Educativo e autoridade</option>
+        <option>Emocional e storytelling</option>
+        <option>Urgência e confrontação</option>
+        <option>Desejo e transformação</option>
+      </select>
+      <label class="lbl">Objetivo:</label>
+      <select id="c-obj">
+        <option>Gerar leads (BOFU)</option>
+        <option>Awareness, novo público (TOFU)</option>
+        <option>Consideração e engagement (MOFU)</option>
+      </select>
+      <label class="lbl">Localização (SEO local):</label>
+      <input type="text" id="c-local" value="Portugal" placeholder="Ex: Lisboa, Porto, Braga...">
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        SEO
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">SEO integrado na copy</div><div class="toggle-sub">Keywords nas primeiras 125 chars da legenda</div></div>
+        <label class="toggle"><input type="checkbox" id="seo-copy" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Relatório SEO completo</div><div class="toggle-sub">Mapa de keywords, score, alt text, recomendações</div></div>
+        <label class="toggle"><input type="checkbox" id="seo-rel" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div><div class="toggle-label">Keywords faladas (Reels)</div><div class="toggle-sub">Keyword primária nos primeiros 3 segundos do roteiro</div></div>
+        <label class="toggle"><input type="checkbox" id="seo-audio" checked><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Geração do criativo
+      </div>
+      <div class="gen-grid">
+        <button class="gen-opt sel" onclick="pickGen(this,'higgsfield-img')"><div class="icon">🖼️</div><span>Imagem Higgsfield</span></button>
+        <button class="gen-opt" onclick="pickGen(this,'higgsfield-vid')"><div class="icon">🎬</div><span>Vídeo Higgsfield</span></button>
+        <button class="gen-opt" onclick="pickGen(this,'prompt-ext')"><div class="icon">📋</div><span>Prompt externo</span></button>
+        <button class="gen-opt" onclick="pickGen(this,'carrossel-hf')"><div class="icon">📱</div><span>Carrossel slides</span></button>
+      </div>
+      <div class="nota">
+        <strong>Nota:</strong> O Higgsfield gera a imagem ou vídeo base com a paleta TurboTráfego. O texto sobreposto (headline, CTA) é montado depois no Canva ou CapCut com base na direção visual gerada.
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL DIMENSÕES -->
+  <div class="panel" id="panel-dimensoes">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        Dimensões por formato e plataforma
+      </div>
+      <table class="dim-table">
+        <tr><th>Formato</th><th>Dimensão</th><th>Respiro</th><th>Plataforma</th></tr>
+        <tr><td class="dh">Reels</td><td>1080×1920px</td><td>250px topo/base</td><td>Instagram, Facebook</td></tr>
+        <tr><td class="dh">Estático Feed</td><td>1080×1080px</td><td>120px bordas</td><td>Instagram, Facebook</td></tr>
+        <tr><td class="dh">Estático 4:5</td><td>1080×1350px</td><td>150px bordas</td><td>Instagram</td></tr>
+        <tr><td class="dh">Carrossel</td><td>1080×1080px</td><td>120px bordas</td><td>Instagram, Facebook</td></tr>
+        <tr><td class="dh">Story / Ads</td><td>1080×1920px</td><td>300px topo/base</td><td>Instagram, Facebook</td></tr>
+        <tr><td class="dh">Facebook Post</td><td>1200×628px</td><td>80px bordas</td><td>Facebook</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        Tipografia TurboTráfego
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:2.2">
+        Headline: <span style="color:var(--text);font-weight:500">Chau Philomene One · 60 a 90px · Dourado #B8860B</span><br>
+        Subtítulo: <span style="color:var(--text);font-weight:500">Sans-Serif Light · 28 a 36px · Branco ou creme</span><br>
+        Corpo/legenda: <span style="color:var(--text);font-weight:500">Sans-Serif Regular · 22 a 28px</span><br>
+        CTA: <span style="color:var(--text);font-weight:500">Bold · 28 a 34px · Fundo dourado #B8860B</span><br>
+        Fundo padrão: <span style="color:var(--text);font-weight:500">#1A1A1A sólido ou textura subtil</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Horários de publicação ideais (Portugal)
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:2.2">
+        Instagram Reels: <span style="color:var(--gold);font-weight:500">Ter/Qua/Sex · 11h00 e 19h00</span><br>
+        Instagram Feed: <span style="color:var(--gold);font-weight:500">Seg/Qui · 09h00 e 12h00</span><br>
+        Facebook: <span style="color:var(--gold);font-weight:500">Qua/Qui/Sex · 13h00 e 20h00</span><br>
+        Stories: <span style="color:var(--gold);font-weight:500">Diário · 08h00 e 21h00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL GERAR -->
+  <div class="panel" id="panel-gerar">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+        Resumo e geração
+      </div>
+      <div style="background:var(--dark);border-radius:9px;padding:10px 13px;margin-bottom:10px;font-size:11px;line-height:2.1;color:var(--muted)">
+        Nicho: <span id="r-nicho" style="color:var(--text);font-weight:500">Clínicas de Estética</span><br>
+        Formato: <span id="r-formato" style="color:var(--text);font-weight:500">Reels</span><br>
+        Tópico: <span id="r-topico" style="color:var(--text);font-weight:500">...</span><br>
+        Criativo: <span id="r-gen" style="color:var(--gold);font-weight:500">Imagem Higgsfield</span><br>
+        Web Search: <span style="color:#1DB890;font-weight:500">Ativo · Pesquisa em tempo real</span>
+      </div>
+      <div class="prog-steps" id="prog-steps">
+        <div class="pstep active" id="ps1"><div class="pstep-dot">1</div><span>Gerar copy + SEO com pesquisa web</span></div>
+        <div class="pstep" id="ps2"><div class="pstep-dot">2</div><span>Gerar prompt e criativo visual</span></div>
+        <div class="pstep" id="ps3"><div class="pstep-dot">3</div><span>Pronto a publicar</span></div>
+      </div>
+      <button class="btn-gold" onclick="gerarTudo()" id="btn-main" style="margin-top:10px">
+        ✦ Gerar tudo agora
+      </button>
+    </div>
+
+    <!-- OUTPUT COPY -->
+    <div class="card" id="out-copy-card" style="display:none">
+      <div class="output-header">
+        <div class="card-title" style="margin:0">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Copy gerado
+        </div>
+        <button class="btn-sm" onclick="copiarAtivo()" id="btn-copy">📋 Copiar</button>
+      </div>
+      <div class="output-tabs">
+        <button class="output-tab active" onclick="showTab('tab-copy',this)">Copy + Legenda</button>
+        <button class="output-tab" onclick="showTab('tab-seo',this)">Relatório SEO</button>
+        <button class="output-tab" onclick="showTab('tab-prompt',this)">Prompt visual</button>
+      </div>
+      <div id="seo-score-row" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:var(--muted)">Score SEO</span>
+          <span id="seo-score-val" style="font-size:12px;font-weight:600;color:var(--gold)"></span>
+        </div>
+        <div class="score-bar"><div class="score-fill" id="seo-score-fill" style="width:0"></div></div>
+      </div>
+      <div class="output-box" id="tab-copy"></div>
+      <div class="output-box" id="tab-seo" style="display:none"></div>
+      <div class="output-box" id="tab-prompt" style="display:none"></div>
+      <div style="margin-top:8px;display:flex;gap:7px">
+        <button class="btn-outline" onclick="gerarNovamente()" style="flex:1">↻ Nova variação</button>
+        <button class="btn-outline" onclick="exportarTxt()" style="flex:1">⬇ Exportar .txt</button>
+      </div>
+    </div>
+
+    <!-- OUTPUT CRIATIVO HIGGSFIELD -->
+    <div class="card" id="out-higgsfield-card" style="display:none">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Criativo · Higgsfield
+      </div>
+      <div id="higgsfield-output"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ST = {
+  nicho: 'Clínicas de Estética',
+  formato: 'Reels',
+  topico: '',
+  tom: 'Direto e provocador',
+  obj: 'Gerar leads (BOFU)',
+  local: 'Portugal',
+  gen: 'higgsfield-img'
+};
+
+let outData = { copy: '', seo: '', prompt: '', activeTab: 'tab-copy' };
+
+// ── API ──────────────────────────────────────────────────────
+function getKey() { return document.getElementById('api-key').value.trim(); }
+
+function checkKey() {
+  const k = getKey();
+  const el = document.getElementById('key-status');
+  if (!k) { el.textContent = 'Introduz a tua chave'; el.className = 'apikey-status'; return; }
+  if (k.startsWith('sk-ant-')) { el.textContent = '✓ Chave válida'; el.className = 'apikey-status ok'; }
+  else { el.textContent = '✗ Formato inválido'; el.className = 'apikey-status err'; }
+}
+
+async function callAPI(system, userMsg, useWebSearch = true) {
+  const key = getKey();
+  if (!key || !key.startsWith('sk-ant-')) {
+    throw new Error('Introduz uma API Key válida no topo da ferramenta.');
+  }
+  const body = {
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1500,
+    system: system,
+    messages: [{ role: 'user', content: userMsg }]
+  };
+  if (useWebSearch) {
+    body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  }
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'Erro na API: ' + r.status);
+  }
+  const data = await r.json();
+  const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || '';
+  return text;
+}
+
+// ── NAVEGAÇÃO ────────────────────────────────────────────────
+function goTab(t) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  document.getElementById('nav-' + t).classList.add('active');
+  if (t === 'gerar') syncResumo();
+}
+
+// ── NICHO ────────────────────────────────────────────────────
+function pickNicho(btn, n) {
+  document.querySelectorAll('.nicho-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  ST.nicho = n;
+  document.getElementById('nicho-custom').value = '';
+}
+
+async function confirmarNicho() {
+  const c = document.getElementById('nicho-custom').value.trim();
+  if (c) { ST.nicho = c; document.querySelectorAll('.nicho-btn').forEach(b => b.classList.remove('sel')); }
+  document.getElementById('mkt-nicho').textContent = ST.nicho;
+  document.getElementById('topicos-card').style.display = 'block';
+  await carregarTopicosWeb();
+}
+
+async function carregarTopicosWeb() {
+  const list = document.getElementById('t-list');
+  const load = document.getElementById('t-loading');
+  list.innerHTML = ''; load.style.display = 'block';
+  try {
+    const text = await callAPI(
+      'És um especialista em marketing digital e tendências de mercado em Portugal. Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.',
+      `Pesquisa na web e gera 6 tópicos quentes de conteúdo para o nicho: ${ST.nicho} em Portugal, em 2025.
+Para cada tópico indica:
+- O título do tópico (max 70 caracteres)
+- A tag: HOT (viral/urgente), TREND (crescimento), ou LEGAL (norma/regulamentação)
+Formato de resposta EXATO (uma linha por tópico):
+TOPICO|TAG
+Exemplo:
+A explosão do laser diodo em clínicas portuguesas em 2025|HOT
+Não incluas nenhum texto extra, só as 6 linhas.`,
+      true
+    );
+    load.style.display = 'none';
+    const linhas = text.trim().split('\n').filter(l => l.includes('|'));
+    if (linhas.length === 0) throw new Error('Formato inválido');
+    linhas.forEach(linha => {
+      const parts = linha.split('|');
+      const titulo = parts[0].trim();
+      const tag = (parts[1] || 'TREND').trim().toUpperCase();
+      const tagClass = tag === 'HOT' ? 'tag-hot' : tag === 'LEGAL' ? 'tag-legal' : 'tag-trend';
+      const el = document.createElement('div');
+      el.className = 'topico-item';
+      el.innerHTML = `<span>${titulo}</span><span class="topico-tag ${tagClass}">${tag}</span>`;
+      el.onclick = () => {
+        document.querySelectorAll('.topico-item').forEach(i => i.classList.remove('sel'));
+        el.classList.add('sel');
+        ST.topico = titulo;
+        document.getElementById('c-topico').value = titulo;
+      };
+      list.appendChild(el);
+    });
+  } catch (e) {
+    load.style.display = 'none';
+    list.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:8px">Erro: ${e.message}. Verifica a API Key.</div>`;
+  }
+}
+
+// ── MERCADO ──────────────────────────────────────────────────
+async function pesquisarMercado() {
+  const btn = document.getElementById('btn-mercado');
+  const load = document.getElementById('mercado-loading');
+  const out = document.getElementById('mercado-output');
+  btn.disabled = true; load.style.display = 'block'; out.innerHTML = '';
+  try {
+    const text = await callAPI(
+      'És um especialista em marketing digital e inteligência de mercado para Portugal. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.',
+      `Pesquisa na web e faz uma análise de inteligência de mercado para o nicho: ${ST.nicho} em Portugal, em 2025. Inclui:
+1. TENDÊNCIAS DIGITAIS: o que está a crescer mais agora
+2. NORMAS LEGAIS: regulamentações ou mudanças recentes relevantes
+3. CONCORRÊNCIA: o que os principais concorrentes estão a fazer no digital em Portugal
+4. OPORTUNIDADES: lacunas de conteúdo ou posicionamento ainda não exploradas
+5. KEYWORDS EM ALTA: termos que os portugueses estão a pesquisar neste nicho agora`,
+      true
+    );
+    out.innerHTML = `<div class="output-box" style="margin-top:0">${text}</div>`;
+  } catch (e) {
+    out.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:8px">Erro: ${e.message}</div>`;
+  }
+  btn.disabled = false; load.style.display = 'none';
+}
+
+// ── CRIATIVO ─────────────────────────────────────────────────
+function pickFormato(btn, f) {
+  document.querySelectorAll('.formato-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel'); ST.formato = f;
+}
+function pickGen(btn, g) {
+  document.querySelectorAll('.gen-opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel'); ST.gen = g;
+}
+
+function syncResumo() {
+  ST.tom = document.getElementById('c-tom')?.value || ST.tom;
+  ST.obj = document.getElementById('c-obj')?.value || ST.obj;
+  ST.topico = document.getElementById('c-topico')?.value || ST.topico;
+  ST.local = document.getElementById('c-local')?.value || ST.local;
+  document.getElementById('r-nicho').textContent = ST.nicho;
+  document.getElementById('r-formato').textContent = ST.formato;
+  document.getElementById('r-topico').textContent = ST.topico || '(define no painel Criativo)';
+  const gl = { 'higgsfield-img': 'Imagem Higgsfield (Recraft 4.1)', 'higgsfield-vid': 'Vídeo Higgsfield (Kling 3.0 Turbo)', 'prompt-ext': 'Prompt externo (Midjourney/Leonardo)', 'carrossel-hf': 'Carrossel de slides (Higgsfield)' };
+  document.getElementById('r-gen').textContent = gl[ST.gen] || ST.gen;
+}
+
+// ── GERAR TUDO ───────────────────────────────────────────────
+async function gerarTudo() {
+  ST.tom = document.getElementById('c-tom')?.value || ST.tom;
+  ST.obj = document.getElementById('c-obj')?.value || ST.obj;
+  ST.topico = document.getElementById('c-topico')?.value || ST.topico;
+  ST.local = document.getElementById('c-local')?.value || ST.local;
+
+  if (!getKey() || !getKey().startsWith('sk-ant-')) {
+    alert('Introduz a tua API Key Anthropic no topo da ferramenta antes de gerar.'); return;
+  }
+  if (!ST.topico.trim()) {
+    alert('Define um tópico no painel Criativo antes de gerar.'); return;
+  }
+
+  const seoC = document.getElementById('seo-copy')?.checked;
+  const seoR = document.getElementById('seo-rel')?.checked;
+  const seoA = document.getElementById('seo-audio')?.checked;
+
+  const btn = document.getElementById('btn-main');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> A pesquisar e gerar...';
+  setStep(1);
+
+  document.getElementById('out-copy-card').style.display = 'block';
+  document.getElementById('out-higgsfield-card').style.display = 'none';
+  document.getElementById('tab-copy').textContent = 'A pesquisar web e gerar copy...';
+  document.getElementById('tab-seo').textContent = '';
+  document.getElementById('tab-prompt').textContent = '';
+  document.getElementById('seo-score-row').style.display = 'none';
+
+  const dimInfo = ST.formato === 'Reels' ? '1080×1920px, 9:16, respiro 250px topo/base' :
+    ST.formato === 'Carrossel' ? '1080×1080px por slide, 1:1, respiro 120px' : '1080×1080px ou 1080×1350px, respiro 120px';
+  const aspRatio = ST.formato === 'Reels' ? '9:16' : '1:1';
+
+  const sys = `És o assistente de conteúdo da TurboTráfego, agência portuguesa de marketing digital especializada em tráfego pago, IA e automações para clínicas e negócios em Portugal.
+
+IDENTIDADE VISUAL TURBOTRÁFEGO:
+Fundo: preto #1A1A1A. Cor destaque: dourado #B8860B. Tipografia: Chau Philomene One (headlines). Tom: direto, visceral, autoridade técnica, sem clichés de coaching.
+
+REGRAS DE ESCRITA:
+- Português de Portugal rigoroso. Sem erros ortográficos.
+- Nunca usar travessão. Substituir por vírgula ou ponto final.
+- Tom humano e direto. Evitar frases genéricas de IA.
+- Centrado numa dor, desejo ou transformação real do público.
+${seoC ? `
+SEO OBRIGATÓRIO:
+- Pesquisa na web os termos que os portugueses usam para pesquisar sobre este tópico e nicho.
+- Identifica 1 keyword primária, 2 a 4 secundárias, 2 a 3 long-tail e 3 a 5 semânticas. Todas em PT-PT.
+- Integra a keyword primária de forma natural nas primeiras 125 chars da legenda.
+${seoA && ST.formato === 'Reels' ? '- Keyword primária falada nos primeiros 3 segundos do roteiro.' : ''}
+- Keywords integradas com naturalidade. Nunca keyword stuffing.` : ''}
+
+ESTRUTURA DO OUTPUT (usa exatamente estes separadores):
+
+=== PARTE 1: COPY DO CRIATIVO ===
+${ST.formato === 'Reels' ? 'GANCHO (0 a 3 seg): frase que para o scroll\nDESENVOLVIMENTO (3 a 25 seg): roteiro falado, transformação rápida\nFECHO + CTA (últimos 5 seg):' : ''}
+${ST.formato === 'Carrossel' ? 'SLIDE 1: headline que prende\nSLIDE 2: problema\nSLIDE 3: solução\nSLIDE 4: transformação\nSLIDE 5: CTA claro' : ''}
+${ST.formato === 'Estático' ? 'HEADLINE (máx 7 palavras)\nSUBTEXTO (1 a 2 frases)\nCTA:' : ''}
+
+=== PARTE 2: LEGENDA COMPLETA ===
+Pronta a publicar. Keyword primária nas primeiras 125 chars. Abre com frase de reconhecimento emocional direto. Desenvolve em 3 a 4 frases. Fecha com CTA.
+
+${seoR ? `=== PARTE 3: RELATÓRIO SEO ===
+Mapa de palavras-chave (primária, secundárias, long-tail, semânticas, pesquisadas na web).
+Onde foram aplicadas.
+5 a 8 hashtags com justificação.
+Alt text sugerido com keyword.
+Score de otimização X/10 com justificação honesta.
+2 a 3 recomendações extra fora da copy.` : ''}
+
+=== PARTE 4: PROMPT VISUAL ===
+Prompt ultra-detalhado em inglês para geração de imagem via IA (Recraft 4.1, Midjourney, Leonardo). Inclui: tipo de imagem (a IA decide o estilo mais adequado ao tópico: fotografia real, tipografia minimalista, ou editorial), composição, iluminação, cores (#1A1A1A preto fundo, #B8860B dourado destaque), mood, aspect ratio ${aspRatio}. Prompt em inglês.`;
+
+  const usr = `Nicho: ${ST.nicho}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\n\nPesquisa na web tendências atuais e keywords relevantes para este nicho e tópico em Portugal antes de gerar. Depois gera o conteúdo completo.`;
+
+  try {
+    const full = await callAPI(sys, usr, true);
+
+    const idx3 = full.includes('PARTE 3') ? full.indexOf('PARTE 3') : full.includes('RELATÓRIO SEO') ? full.indexOf('RELATÓRIO SEO') : -1;
+    const idx4 = full.includes('PARTE 4') ? full.indexOf('PARTE 4') : full.includes('PROMPT VISUAL') ? full.indexOf('PROMPT VISUAL') : -1;
+
+    if (idx4 > -1) {
+      outData.prompt = full.substring(idx4).trim();
+      outData.copy = idx3 > -1 ? full.substring(0, idx3).trim() : full.substring(0, idx4).trim();
+      outData.seo = idx3 > -1 ? full.substring(idx3, idx4).trim() : 'Ativa o toggle SEO.';
+    } else {
+      outData.copy = full; outData.seo = 'Ativa o toggle SEO.'; outData.prompt = '';
+    }
+
+    document.getElementById('tab-copy').textContent = outData.copy;
+    document.getElementById('tab-seo').textContent = outData.seo;
+    document.getElementById('tab-prompt').textContent = outData.prompt || 'Prompt não gerado.';
+
+    if (seoR) {
+      const m = outData.seo.match(/Score[^:]*:\s*(\d+)\s*\/\s*10/i);
+      if (m) {
+        const s = parseInt(m[1]);
+        document.getElementById('seo-score-val').textContent = s + '/10';
+        document.getElementById('seo-score-fill').style.width = (s * 10) + '%';
+        document.getElementById('seo-score-row').style.display = 'block';
+      }
+    }
+
+    setStep(2);
+    btn.innerHTML = '<div class="dots"><span></span><span></span><span></span></div> A preparar criativo...';
+    mostrarCriativo(outData.prompt);
+
+  } catch (e) {
+    document.getElementById('tab-copy').textContent = 'Erro: ' + e.message;
+    btn.disabled = false; btn.innerHTML = '✦ Tentar novamente';
+  }
+}
+
+function mostrarCriativo(promptVisual) {
+  const btn = document.getElementById('btn-main');
+  const out = document.getElementById('out-higgsfield-card');
+  const outEl = document.getElementById('higgsfield-output');
+  out.style.display = 'block';
+
+  const aspRatio = ST.formato === 'Reels' ? '9:16' : '1:1';
+  const p = promptVisual || `Professional advertising photo for ${ST.nicho} Portugal, dark background #1A1A1A, gold accent #B8860B, cinematic, ${aspRatio}`;
+  const cleanPrompt = p.replace(/=== PARTE 4.*?===/g, '').replace(/PROMPT VISUAL/g, '').trim();
+
+  if (ST.gen === 'prompt-ext') {
+    outEl.innerHTML = `
+      <div style="margin-bottom:9px;font-size:11px;color:var(--muted)">Copia este prompt para Midjourney, Leonardo AI, DALL-E 3 ou Recraft:</div>
+      <div class="output-box" id="prompt-final">${cleanPrompt}</div>
+      <div style="margin-top:8px;display:flex;gap:7px">
+        <button class="btn-outline" onclick="copyText('prompt-final')" style="flex:1">📋 Copiar prompt</button>
+        <a href="https://app.recraft.ai" target="_blank" style="flex:1"><button class="btn-outline" style="width:100%">→ Abrir Recraft</button></a>
+      </div>`;
+  } else if (ST.gen === 'carrossel-hf') {
+    outEl.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:9px">O carrossel é gerado slide a slide no Higgsfield. Copia o prompt de cada slide:</div>
+      ${['Slide 1: Headline de impacto', 'Slide 2: O problema', 'Slide 3: A solução', 'Slide 4: CTA'].map((s, i) => `
+      <div style="background:var(--dark);border-radius:8px;padding:9px 11px;margin-bottom:7px;font-size:11px">
+        <div style="color:var(--gold);font-weight:600;margin-bottom:4px">${s}</div>
+        <div style="color:var(--muted);font-size:10px" id="slide-${i}">${cleanPrompt} — ${s}, composition adapted for this slide.</div>
+        <button class="btn-sm" onclick="copyText('slide-${i}')" style="margin-top:6px">📋 Copiar</button>
+      </div>`).join('')}
+      <a href="https://higgsfield.ai" target="_blank"><button class="btn-gold" style="margin-top:4px">→ Abrir Higgsfield</button></a>`;
+  } else if (ST.gen === 'higgsfield-vid') {
+    outEl.innerHTML = `
+      <div style="background:var(--dark);border-radius:9px;padding:12px;margin-bottom:9px">
+        <div style="font-size:11px;color:var(--gold);font-weight:600;margin-bottom:6px">Vídeo · Kling 3.0 Turbo · ${aspRatio}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Modelo: <span style="color:var(--text)">kling3_0_turbo</span><br>Aspect ratio: <span style="color:var(--text)">${aspRatio}</span><br>Duração: <span style="color:var(--text)">8 segundos</span><br>Resolução: <span style="color:var(--text)">720p</span></div>
+      </div>
+      <div class="output-box" id="vid-prompt">${cleanPrompt}</div>
+      <div style="margin-top:8px;display:flex;gap:7px">
+        <button class="btn-outline" onclick="copyText('vid-prompt')" style="flex:1">📋 Copiar prompt</button>
+        <a href="https://higgsfield.ai" target="_blank" style="flex:1"><button class="btn-outline" style="width:100%">→ Abrir Higgsfield</button></a>
+      </div>`;
+  } else {
+    outEl.innerHTML = `
+      <div style="background:var(--dark);border-radius:9px;padding:12px;margin-bottom:9px">
+        <div style="font-size:11px;color:var(--gold);font-weight:600;margin-bottom:6px">Imagem · Recraft 4.1 · ${aspRatio}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">Modelo: <span style="color:var(--text)">recraft-v4-1</span><br>Cores: <span style="color:var(--text)">#1A1A1A + #B8860B</span><br>Aspect ratio: <span style="color:var(--text)">${aspRatio}</span><br>Resolução: <span style="color:var(--text)">2k</span></div>
+      </div>
+      <div class="output-box" id="img-prompt">${cleanPrompt}</div>
+      <div style="margin-top:8px;display:flex;gap:7px">
+        <button class="btn-outline" onclick="copyText('img-prompt')" style="flex:1">📋 Copiar prompt</button>
+        <a href="https://higgsfield.ai" target="_blank" style="flex:1"><button class="btn-outline" style="width:100%">→ Abrir Higgsfield</button></a>
+      </div>
+      <div class="nota" style="margin-top:9px">
+        <strong>Fluxo:</strong> Copia o prompt, abre o Higgsfield, cola no modelo Recraft 4.1 com as cores #1A1A1A e #B8860B, e aspect ratio ${aspRatio}. O criativo base fica pronto. Monta o texto (headline, CTA) no Canva com a tipografia Chau Philomene One.
+      </div>`;
+  }
+
+  setStep(3);
+  btn.disabled = false; btn.innerHTML = '✦ Gerar novamente';
+}
+
+// ── UTILITÁRIOS ──────────────────────────────────────────────
+function setStep(s) {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('ps' + i);
+    el.classList.remove('done', 'active');
+    if (i < s) el.classList.add('done');
+    if (i === s) el.classList.add('active');
+  }
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.output-box').forEach(b => b.style.display = 'none');
+  document.querySelectorAll('.output-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).style.display = 'block';
+  btn.classList.add('active');
+  outData.activeTab = id;
+  const showScore = id === 'tab-seo' && document.getElementById('seo-rel')?.checked;
+  document.getElementById('seo-score-row').style.display = showScore ? 'block' : 'none';
+}
+
+function copiarAtivo() {
+  const map = { 'tab-copy': outData.copy, 'tab-seo': outData.seo, 'tab-prompt': outData.prompt };
+  const text = map[outData.activeTab] || outData.copy;
+  navigator.clipboard.writeText(text).then(() => {
+    const b = document.getElementById('btn-copy');
+    b.textContent = '✓ Copiado'; setTimeout(() => { b.textContent = '📋 Copiar'; }, 2000);
+  });
+}
+
+function copyText(id) {
+  const t = document.getElementById(id)?.textContent || '';
+  navigator.clipboard.writeText(t).catch(() => {});
+}
+
+function gerarNovamente() {
+  document.getElementById('out-higgsfield-card').style.display = 'none';
+  setStep(1); gerarTudo();
+}
+
+function exportarTxt() {
+  const content = [outData.copy, outData.seo, outData.prompt].filter(Boolean).join('\n\n' + '='.repeat(50) + '\n\n');
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `turbotrafego-${ST.nicho.replace(/\s+/g,'-').toLowerCase()}-${ST.formato.toLowerCase()}.txt`;
+  a.click();
+}
+</script>
+</body>
+</html>

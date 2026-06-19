@@ -428,7 +428,7 @@
         <svg viewBox="0 0 24 24"><polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/></svg>
         Inteligência de mercado
       </div>
-      <div class="web-indicator"><div class="web-dot"></div> Pesquisa em tempo real para Portugal, 2025</div>
+      <div class="web-indicator"><div class="web-dot"></div> Pesquisa em tempo real, data atual</div>
       <label class="lbl">Nicho ativo: <span id="mkt-nicho" style="color:var(--gold);font-weight:600">Clínicas de Estética</span></label>
       <div style="margin-bottom:9px"></div>
       <button class="btn-gold" onclick="pesquisarMercado()" id="btn-mercado">🔍 Pesquisar agora</button>
@@ -631,6 +631,17 @@ const ST = {
 
 let outData = { copy: '', seo: '', prompt: '', activeTab: 'tab-copy' };
 
+// ── DATA ATUAL DINÂMICA (nunca fica desatualizado) ──────────
+function getDataAtual() {
+  const hoje = new Date();
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  return {
+    ano: hoje.getFullYear(),
+    mesNome: meses[hoje.getMonth()],
+    dataCompleta: `${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`
+  };
+}
+
 // ── API ──────────────────────────────────────────────────────
 function getKey() { return document.getElementById('api-key').value.trim(); }
 
@@ -702,17 +713,18 @@ async function carregarTopicosWeb() {
   const list = document.getElementById('t-list');
   const load = document.getElementById('t-loading');
   list.innerHTML = ''; load.style.display = 'block';
+  const dt = getDataAtual();
   try {
     const text = await callAPI(
       'És um especialista em marketing digital e tendências de mercado em Portugal. Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.',
-      `Pesquisa na web e gera 6 tópicos quentes de conteúdo para o nicho: ${ST.nicho} em Portugal, em 2025.
+      `Pesquisa na web e gera 6 tópicos quentes de conteúdo para o nicho: ${ST.nicho} em Portugal, atualizados a ${dt.dataCompleta}. Usa apenas informação atual e verificada na pesquisa, nunca dados desatualizados.
 Para cada tópico indica:
 - O título do tópico (max 70 caracteres)
 - A tag: HOT (viral/urgente), TREND (crescimento), ou LEGAL (norma/regulamentação)
 Formato de resposta EXATO (uma linha por tópico):
 TOPICO|TAG
 Exemplo:
-A explosão do laser diodo em clínicas portuguesas em 2025|HOT
+A explosão do laser diodo em clínicas portuguesas em ${dt.ano}|HOT
 Não incluas nenhum texto extra, só as 6 linhas.`,
       true
     );
@@ -747,10 +759,11 @@ async function pesquisarMercado() {
   const load = document.getElementById('mercado-loading');
   const out = document.getElementById('mercado-output');
   btn.disabled = true; load.style.display = 'block'; out.innerHTML = '';
+  const dt = getDataAtual();
   try {
     const text = await callAPI(
       'És um especialista em marketing digital e inteligência de mercado para Portugal. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.',
-      `Pesquisa na web e faz uma análise de inteligência de mercado para o nicho: ${ST.nicho} em Portugal, em 2025. Inclui:
+      `Pesquisa na web e faz uma análise de inteligência de mercado para o nicho: ${ST.nicho} em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
 1. TENDÊNCIAS DIGITAIS: o que está a crescer mais agora
 2. NORMAS LEGAIS: regulamentações ou mudanças recentes relevantes
 3. CONCORRÊNCIA: o que os principais concorrentes estão a fazer no digital em Portugal
@@ -793,6 +806,7 @@ async function gerarTudo() {
   ST.obj = document.getElementById('c-obj')?.value || ST.obj;
   ST.topico = document.getElementById('c-topico')?.value || ST.topico;
   ST.local = document.getElementById('c-local')?.value || ST.local;
+  const dt = getDataAtual();
 
   if (!getKey() || !getKey().startsWith('sk-ant-')) {
     alert('Introduz a tua API Key Anthropic no topo da ferramenta antes de gerar.'); return;
@@ -860,7 +874,7 @@ Score de otimização X/10 com justificação honesta.
 === PARTE 4: PROMPT VISUAL ===
 Prompt ultra-detalhado em inglês para geração de imagem via IA (Recraft 4.1, Midjourney, Leonardo). Inclui: tipo de imagem (a IA decide o estilo mais adequado ao tópico: fotografia real, tipografia minimalista, ou editorial), composição, iluminação, cores (#1A1A1A preto fundo, #B8860B dourado destaque), mood, aspect ratio ${aspRatio}. Prompt em inglês.`;
 
-  const usr = `Nicho: ${ST.nicho}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\n\nPesquisa na web tendências atuais e keywords relevantes para este nicho e tópico em Portugal antes de gerar. Depois gera o conteúdo completo.`;
+  const usr = `Nicho: ${ST.nicho}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\nData de referência: ${dt.dataCompleta}\n\nPesquisa na web tendências atuais e keywords relevantes para este nicho e tópico em Portugal, usando informação verificada e atual à data de referência acima. Nunca uses dados desatualizados ou de anos anteriores como se fossem o presente. Depois gera o conteúdo completo.`;
 
   try {
     const full = await callAPI(sys, usr, true);

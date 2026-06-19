@@ -179,6 +179,7 @@
   .tag-hot { background: var(--red-bg); color: var(--red); }
   .tag-trend { background: var(--gold-pale); color: var(--gold); }
   .tag-legal { background: var(--green-bg); color: #1DB890; }
+  .tag-ia { background: var(--green-bg); color: #1DB890; }
 
   /* FORM ELEMENTS */
   label.lbl { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: block; font-weight: 500; }
@@ -357,6 +358,7 @@
     <label>🔑 API Key Anthropic:</label>
     <input type="password" id="api-key" placeholder="sk-ant-..." oninput="checkKey()" />
     <span class="apikey-status" id="key-status">Introduz a tua chave</span>
+    <button class="btn-sm" onclick="limparKeyGuardada()" title="Esquecer chave guardada neste browser" style="margin-left:4px">🗑</button>
   </div>
 
   <!-- NAV -->
@@ -649,8 +651,31 @@ function checkKey() {
   const k = getKey();
   const el = document.getElementById('key-status');
   if (!k) { el.textContent = 'Introduz a tua chave'; el.className = 'apikey-status'; return; }
-  if (k.startsWith('sk-ant-')) { el.textContent = '✓ Chave válida'; el.className = 'apikey-status ok'; }
-  else { el.textContent = '✗ Formato inválido'; el.className = 'apikey-status err'; }
+  if (k.startsWith('sk-ant-')) {
+    el.textContent = '✓ Chave válida';
+    el.className = 'apikey-status ok';
+    localStorage.setItem('tt_api_key', k);
+  } else {
+    el.textContent = '✗ Formato inválido';
+    el.className = 'apikey-status err';
+  }
+}
+
+function carregarKeyGuardada() {
+  const saved = localStorage.getItem('tt_api_key');
+  if (saved) {
+    document.getElementById('api-key').value = saved;
+    checkKey();
+  }
+}
+document.addEventListener('DOMContentLoaded', carregarKeyGuardada);
+
+function limparKeyGuardada() {
+  localStorage.removeItem('tt_api_key');
+  document.getElementById('api-key').value = '';
+  const el = document.getElementById('key-status');
+  el.textContent = 'Chave removida deste browser';
+  el.className = 'apikey-status';
 }
 
 async function callAPI(system, userMsg, useWebSearch = true) {
@@ -716,15 +741,26 @@ async function carregarTopicosWeb() {
   const dt = getDataAtual();
   try {
     const text = await callAPI(
-      'És um especialista em marketing digital e tendências de mercado em Portugal. Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.',
-      `Pesquisa na web e gera 6 tópicos quentes de conteúdo para o nicho: ${ST.nicho} em Portugal, atualizados a ${dt.dataCompleta}. Usa apenas informação atual e verificada na pesquisa, nunca dados desatualizados.
+      `És o estratega de conteúdo da TurboTráfego, agência portuguesa de marketing digital. Escreves para donos de negócio do nicho ${ST.nicho}, não para profissionais do sector. Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.
+
+REGRA FUNDAMENTAL: Os tópicos NUNCA são notícias diretas do sector (novos tratamentos, equipamentos, técnicas clínicas, etc). Os tópicos são sempre sobre MARKETING, CAPTAÇÃO DE CLIENTES e GESTÃO DO NEGÓCIO digital, aplicados a este nicho. O dono do negócio quer saber como vender mais e gastar melhor o orçamento de anúncios, não quer aprender sobre a profissão dele.
+
+Os 6 tópicos têm de vir DISTRIBUÍDOS por estas categorias, pesquisa o que há de mais atual em cada uma:
+1. Tendências de anúncios digitais (Meta Ads, Google Ads, custos, formatos que estão a funcionar)
+2. Comportamento e tendências de consumo do público deste nicho (como pesquisam, como decidem, o que os convence a comprar)
+3. Captação e nutrição de leads (CRM, automações, funis, follow-up, WhatsApp)
+4. IA aplicada ao negócio (agentes de atendimento, automação, criação de conteúdo)
+5. Presença digital e redes sociais (o que está a gerar mais alcance e conversão agora)
+6. Gestão e operação do negócio relacionada com marketing (retenção, ticket médio, recorrência)`,
+      `Pesquisa na web tendências atuais de marketing digital, IA, comportamento de consumidor e captação de leads, aplicadas ao nicho: ${ST.nicho}, em Portugal, atualizadas a ${dt.dataCompleta}. Usa apenas informação atual e verificada na pesquisa, nunca dados desatualizados.
+Gera 6 tópicos, um de cada categoria listada nas instruções, sempre do ponto de vista de "como isto ajuda o dono do negócio a vender mais e a gerir melhor o marketing", nunca do ponto de vista clínico ou técnico do sector.
 Para cada tópico indica:
-- O título do tópico (max 70 caracteres)
-- A tag: HOT (viral/urgente), TREND (crescimento), ou LEGAL (norma/regulamentação)
+- O título do tópico (max 70 caracteres), focado em marketing/leads/IA/consumo, nunca em novidades técnicas do sector
+- A tag: HOT (urgente/oportunidade), TREND (crescimento), ou IA (relacionado com automação/IA)
 Formato de resposta EXATO (uma linha por tópico):
 TOPICO|TAG
 Exemplo:
-A explosão do laser diodo em clínicas portuguesas em ${dt.ano}|HOT
+Porque é que os teus anúncios têm cliques mas não marcações|HOT
 Não incluas nenhum texto extra, só as 6 linhas.`,
       true
     );
@@ -735,7 +771,7 @@ Não incluas nenhum texto extra, só as 6 linhas.`,
       const parts = linha.split('|');
       const titulo = parts[0].trim();
       const tag = (parts[1] || 'TREND').trim().toUpperCase();
-      const tagClass = tag === 'HOT' ? 'tag-hot' : tag === 'LEGAL' ? 'tag-legal' : 'tag-trend';
+      const tagClass = tag === 'HOT' ? 'tag-hot' : tag === 'IA' ? 'tag-ia' : tag === 'LEGAL' ? 'tag-legal' : 'tag-trend';
       const el = document.createElement('div');
       el.className = 'topico-item';
       el.innerHTML = `<span>${titulo}</span><span class="topico-tag ${tagClass}">${tag}</span>`;
@@ -762,13 +798,14 @@ async function pesquisarMercado() {
   const dt = getDataAtual();
   try {
     const text = await callAPI(
-      'És um especialista em marketing digital e inteligência de mercado para Portugal. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.',
-      `Pesquisa na web e faz uma análise de inteligência de mercado para o nicho: ${ST.nicho} em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
-1. TENDÊNCIAS DIGITAIS: o que está a crescer mais agora
-2. NORMAS LEGAIS: regulamentações ou mudanças recentes relevantes
-3. CONCORRÊNCIA: o que os principais concorrentes estão a fazer no digital em Portugal
-4. OPORTUNIDADES: lacunas de conteúdo ou posicionamento ainda não exploradas
-5. KEYWORDS EM ALTA: termos que os portugueses estão a pesquisar neste nicho agora`,
+      `És o estrategista da TurboTráfego, agência portuguesa de marketing digital. Esta análise é para a própria agência usar para aconselhar clientes do nicho ${ST.nicho}, não é um relatório sobre o sector em si. O foco é sempre: marketing digital, anúncios, captação de leads, IA, comportamento de consumidor e presença digital. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.`,
+      `Pesquisa na web e faz uma análise de inteligência de mercado de MARKETING DIGITAL para o nicho: ${ST.nicho} em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
+1. TENDÊNCIAS DE ANÚNCIOS: o que está a funcionar agora em Meta Ads e Google Ads para este nicho, custos, formatos, criativos
+2. COMPORTAMENTO DO CONSUMIDOR: como o público deste nicho pesquisa, decide e compra atualmente
+3. CAPTAÇÃO E IA: o que as agências e negócios deste nicho estão a fazer com automação, CRM e agentes de IA
+4. NORMAS RELEVANTES PARA PUBLICIDADE: regras ou mudanças recentes que afetem anúncios ou comunicação deste nicho
+5. OPORTUNIDADES DE CONTEÚDO: ângulos de marketing ainda não explorados pelos concorrentes
+6. KEYWORDS EM ALTA: termos que os portugueses estão a pesquisar relacionados com este nicho e com a decisão de compra`,
       true
     );
     out.innerHTML = `<div class="output-box" style="margin-top:0">${text}</div>`;

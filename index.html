@@ -644,6 +644,29 @@ function getDataAtual() {
   };
 }
 
+// ── AUDIÊNCIA POR NICHO ──────────────────────────────────────
+// "Marketing Digital" é um caso especial: aqui é o Miguel a falar como
+// especialista para empresários/empreendedores no geral, não um dono de
+// negócio de um sector vertical a receber dicas de marketing.
+function isNichoMarketing() {
+  return ST.nicho === 'Marketing Digital';
+}
+
+function getAudiencia() {
+  if (isNichoMarketing()) {
+    return {
+      publico: 'empresários e empreendedores em geral, de qualquer sector, que querem entender e aplicar marketing digital nos seus negócios',
+      perspetiva: 'Aqui falas como especialista de marketing digital diretamente para empresários e empreendedores. Não é conteúdo de marketing aplicado a um nicho específico, é o próprio marketing digital como assunto principal: tráfego pago, IA aplicada a negócios, automações, captação e nutrição de leads, tendências de consumo, CRM, presença digital. Podes trazer novidades, tendências e explicações sobre estas vertentes, sempre de forma que um empresário sem conhecimento técnico entenda o porquê de aplicar isto no negócio dele.',
+      regraTopicos: 'Os tópicos são sobre o PRÓPRIO marketing digital (novidades, tendências, vertentes como tráfego pago, IA, automações, CRM, captação de leads, presença digital), explicados para empresários e empreendedores em geral aplicarem nos seus negócios, independentemente do sector onde atuam.'
+    };
+  }
+  return {
+    publico: `donos de negócio do nicho ${ST.nicho}`,
+    perspetiva: `Falas para donos de negócio do nicho ${ST.nicho}. Eles não querem aprender sobre a profissão deles, querem saber como vender mais e gerir melhor o marketing do negócio.`,
+    regraTopicos: `Os tópicos NUNCA são notícias diretas do sector ${ST.nicho} (novos tratamentos, equipamentos, técnicas, etc). São sempre sobre marketing, captação de clientes e gestão do negócio digital, aplicados a este nicho.`
+  };
+}
+
 // ── API ──────────────────────────────────────────────────────
 function getKey() { return document.getElementById('api-key').value.trim(); }
 
@@ -739,28 +762,30 @@ async function carregarTopicosWeb() {
   const load = document.getElementById('t-loading');
   list.innerHTML = ''; load.style.display = 'block';
   const dt = getDataAtual();
+  const aud = getAudiencia();
+  const ehMarketing = isNichoMarketing();
   try {
     const text = await callAPI(
-      `És o estratega de conteúdo da TurboTráfego, agência portuguesa de marketing digital. Escreves para donos de negócio do nicho ${ST.nicho}, não para profissionais do sector. Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.
+      `És o estratega de conteúdo da TurboTráfego, agência portuguesa de marketing digital. ${aud.perspetiva} Responde sempre em Português de Portugal. Nunca uses travessão, substitui por vírgula ou ponto. Sem erros ortográficos.
 
-REGRA FUNDAMENTAL: Os tópicos NUNCA são notícias diretas do sector (novos tratamentos, equipamentos, técnicas clínicas, etc). Os tópicos são sempre sobre MARKETING, CAPTAÇÃO DE CLIENTES e GESTÃO DO NEGÓCIO digital, aplicados a este nicho. O dono do negócio quer saber como vender mais e gastar melhor o orçamento de anúncios, não quer aprender sobre a profissão dele.
+REGRA FUNDAMENTAL: ${aud.regraTopicos}
 
 Os 6 tópicos têm de vir DISTRIBUÍDOS por estas categorias, pesquisa o que há de mais atual em cada uma:
 1. Tendências de anúncios digitais (Meta Ads, Google Ads, custos, formatos que estão a funcionar)
-2. Comportamento e tendências de consumo do público deste nicho (como pesquisam, como decidem, o que os convence a comprar)
+2. ${ehMarketing ? 'Tendências de comportamento de consumo em geral (como os consumidores pesquisam, decidem e compram hoje, e o que isso significa para qualquer negócio)' : 'Comportamento e tendências de consumo do público deste nicho (como pesquisam, como decidem, o que os convence a comprar)'}
 3. Captação e nutrição de leads (CRM, automações, funis, follow-up, WhatsApp)
 4. IA aplicada ao negócio (agentes de atendimento, automação, criação de conteúdo)
 5. Presença digital e redes sociais (o que está a gerar mais alcance e conversão agora)
-6. Gestão e operação do negócio relacionada com marketing (retenção, ticket médio, recorrência)`,
-      `Pesquisa na web tendências atuais de marketing digital, IA, comportamento de consumidor e captação de leads, aplicadas ao nicho: ${ST.nicho}, em Portugal, atualizadas a ${dt.dataCompleta}. Usa apenas informação atual e verificada na pesquisa, nunca dados desatualizados.
-Gera 6 tópicos, um de cada categoria listada nas instruções, sempre do ponto de vista de "como isto ajuda o dono do negócio a vender mais e a gerir melhor o marketing", nunca do ponto de vista clínico ou técnico do sector.
+6. ${ehMarketing ? 'Novidades e mudanças nas plataformas ou ferramentas de marketing que todo o empresário deveria conhecer' : 'Gestão e operação do negócio relacionada com marketing (retenção, ticket médio, recorrência)'}`,
+      `Pesquisa na web tendências atuais de marketing digital, IA, comportamento de consumidor e captação de leads${ehMarketing ? '' : `, aplicadas ao nicho: ${ST.nicho}`}, em Portugal, atualizadas a ${dt.dataCompleta}. Usa apenas informação atual e verificada na pesquisa, nunca dados desatualizados.
+Gera 6 tópicos, um de cada categoria listada nas instruções, ${ehMarketing ? 'sempre do ponto de vista de um especialista de marketing digital a explicar a empresários e empreendedores em geral, de qualquer sector, porque isto importa para o negócio deles' : 'sempre do ponto de vista de "como isto ajuda o dono do negócio a vender mais e a gerir melhor o marketing", nunca do ponto de vista clínico ou técnico do sector'}.
 Para cada tópico indica:
-- O título do tópico (max 70 caracteres), focado em marketing/leads/IA/consumo, nunca em novidades técnicas do sector
+- O título do tópico (max 70 caracteres)${ehMarketing ? ', sobre marketing digital, IA ou tendências de consumo, escrito para empresários em geral' : ', focado em marketing/leads/IA/consumo, nunca em novidades técnicas do sector'}
 - A tag: HOT (urgente/oportunidade), TREND (crescimento), ou IA (relacionado com automação/IA)
 Formato de resposta EXATO (uma linha por tópico):
 TOPICO|TAG
 Exemplo:
-Porque é que os teus anúncios têm cliques mas não marcações|HOT
+${ehMarketing ? 'Porque é que o custo por lead no Meta Ads subiu em todos os sectores' : 'Porque é que os teus anúncios têm cliques mas não marcações'}|HOT
 Não incluas nenhum texto extra, só as 6 linhas.`,
       true
     );
@@ -796,10 +821,21 @@ async function pesquisarMercado() {
   const out = document.getElementById('mercado-output');
   btn.disabled = true; load.style.display = 'block'; out.innerHTML = '';
   const dt = getDataAtual();
+  const ehMarketing = isNichoMarketing();
   try {
     const text = await callAPI(
-      `És o estrategista da TurboTráfego, agência portuguesa de marketing digital. Esta análise é para a própria agência usar para aconselhar clientes do nicho ${ST.nicho}, não é um relatório sobre o sector em si. O foco é sempre: marketing digital, anúncios, captação de leads, IA, comportamento de consumidor e presença digital. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.`,
-      `Pesquisa na web e faz uma análise de inteligência de mercado de MARKETING DIGITAL para o nicho: ${ST.nicho} em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
+      ehMarketing
+        ? `És o estrategista da TurboTráfego, agência portuguesa de marketing digital. Esta análise é sobre o próprio mercado de marketing digital, anúncios, IA e captação de leads, para o Miguel usar diretamente em conteúdo dirigido a empresários e empreendedores em geral, de qualquer sector. Não é uma análise de um nicho vertical específico. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.`
+        : `És o estrategista da TurboTráfego, agência portuguesa de marketing digital. Esta análise é para a própria agência usar para aconselhar clientes do nicho ${ST.nicho}, não é um relatório sobre o sector em si. O foco é sempre: marketing digital, anúncios, captação de leads, IA, comportamento de consumidor e presença digital. Responde em Português de Portugal. Sem travessão, usa vírgula ou ponto. Sem erros ortográficos. Formato claro com secções.`,
+      ehMarketing
+        ? `Pesquisa na web e faz uma análise de inteligência de mercado sobre MARKETING DIGITAL em geral, em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
+1. TENDÊNCIAS DE ANÚNCIOS: o que está a mudar agora em Meta Ads e Google Ads, custos, formatos, novidades de plataforma, relevante para qualquer empresário que faça anúncios
+2. COMPORTAMENTO DO CONSUMIDOR: como os consumidores em geral pesquisam, decidem e compram atualmente, e o que isso significa para negócios de qualquer sector
+3. IA E AUTOMAÇÃO: o que está a mudar em agentes de IA, automação e CRM que todo o empresário devia conhecer
+4. NORMAS E MUDANÇAS DE PLATAFORMA: alterações recentes em políticas de publicidade ou plataformas que afetam qualquer negócio
+5. OPORTUNIDADES DE CONTEÚDO: ângulos e tendências de marketing digital ainda pouco explorados que o Miguel pode usar para se posicionar como especialista
+6. KEYWORDS EM ALTA: termos que empresários e empreendedores portugueses estão a pesquisar sobre marketing digital, IA e anúncios`
+        : `Pesquisa na web e faz uma análise de inteligência de mercado de MARKETING DIGITAL para o nicho: ${ST.nicho} em Portugal, com data de referência ${dt.dataCompleta}. Usa apenas dados atuais e verificados na pesquisa web, nunca informação desatualizada ou de anos anteriores. Inclui:
 1. TENDÊNCIAS DE ANÚNCIOS: o que está a funcionar agora em Meta Ads e Google Ads para este nicho, custos, formatos, criativos
 2. COMPORTAMENTO DO CONSUMIDOR: como o público deste nicho pesquisa, decide e compra atualmente
 3. CAPTAÇÃO E IA: o que as agências e negócios deste nicho estão a fazer com automação, CRM e agentes de IA
@@ -871,8 +907,12 @@ async function gerarTudo() {
   const dimInfo = ST.formato === 'Reels' ? '1080×1920px, 9:16, respiro 250px topo/base' :
     ST.formato === 'Carrossel' ? '1080×1080px por slide, 1:1, respiro 120px' : '1080×1080px ou 1080×1350px, respiro 120px';
   const aspRatio = ST.formato === 'Reels' ? '9:16' : '1:1';
+  const aud = getAudiencia();
 
-  const sys = `És o assistente de conteúdo da TurboTráfego, agência portuguesa de marketing digital especializada em tráfego pago, IA e automações para clínicas e negócios em Portugal.
+  const sys = `És o assistente de conteúdo da TurboTráfego, agência portuguesa de marketing digital especializada em tráfego pago, IA e automações, a criar conteúdo para o Miguel Conceição, fundador da agência.
+
+AUDIÊNCIA DESTE CONTEÚDO: ${aud.publico}.
+${aud.perspetiva}
 
 IDENTIDADE VISUAL TURBOTRÁFEGO:
 Fundo: preto #1A1A1A. Cor destaque: dourado #B8860B. Tipografia: Chau Philomene One (headlines). Tom: direto, visceral, autoridade técnica, sem clichés de coaching.
@@ -944,7 +984,7 @@ Score de otimização X/10 com justificação honesta.
 === PARTE 4: PROMPT VISUAL ===
 Prompt ultra-detalhado em inglês para geração de imagem via IA (Recraft 4.1, Midjourney, Leonardo). Inclui: tipo de imagem (a IA decide o estilo mais adequado ao tópico: fotografia real, tipografia minimalista, ou editorial), composição, iluminação, cores (#1A1A1A preto fundo, #B8860B dourado destaque), mood, aspect ratio ${aspRatio}. Prompt em inglês.`;
 
-  const usr = `Nicho: ${ST.nicho}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\nData de referência: ${dt.dataCompleta}\n\nPesquisa na web tendências atuais e keywords relevantes para este nicho e tópico em Portugal, usando informação verificada e atual à data de referência acima. Nunca uses dados desatualizados ou de anos anteriores como se fossem o presente. Depois gera o conteúdo completo.`;
+  const usr = `Nicho: ${ST.nicho}${isNichoMarketing() ? ' (audiência: empresários e empreendedores em geral, não é um sector vertical)' : ''}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\nData de referência: ${dt.dataCompleta}\n\nPesquisa na web tendências atuais e keywords relevantes para este tópico em Portugal, usando informação verificada e atual à data de referência acima. Nunca uses dados desatualizados ou de anos anteriores como se fossem o presente. Depois gera o conteúdo completo.`;
 
   try {
     const full = await callAPI(sys, usr, true);

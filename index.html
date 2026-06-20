@@ -882,18 +882,51 @@ REGRAS DE ESCRITA:
 - Nunca usar travessão. Substituir por vírgula ou ponto final.
 - Tom humano e direto. Evitar frases genéricas de IA.
 - Centrado numa dor, desejo ou transformação real do público.
+${ST.formato === 'Reels' ? `
+OBJETIVO ESTRATÉGICO DESTE REELS:
+O objetivo não é só uma publicação, é crescimento de conta. O Reels tem de prender a pessoa no gancho de forma arrebatadora, entregar valor real durante todo o vídeo para a pessoa sentir que está a receber algo que vale a pena, e fechar com a sensação de "Ah então é isso, faz todo o sentido". O resultado procurado é alta retenção, replays, comentários e saves, porque são esses sinais, mais do que likes, que fazem o algoritmo do Instagram distribuir o conteúdo para fora dos seguidores atuais e aumentar seguidores e visualizações de forma consistente.` : ''}
 ${seoC ? `
 SEO OBRIGATÓRIO:
 - Pesquisa na web os termos que os portugueses usam para pesquisar sobre este tópico e nicho.
 - Identifica 1 keyword primária, 2 a 4 secundárias, 2 a 3 long-tail e 3 a 5 semânticas. Todas em PT-PT.
 - Integra a keyword primária de forma natural nas primeiras 125 chars da legenda.
-${seoA && ST.formato === 'Reels' ? '- Keyword primária falada nos primeiros 3 segundos do roteiro.' : ''}
+${seoA && ST.formato === 'Reels' ? '- Keyword primária falada no contexto rápido (segundos 2 a 6), nunca forçada dentro do gancho de 7 palavras, que tem de ficar limpo e direto.' : ''}
 - Keywords integradas com naturalidade. Nunca keyword stuffing.` : ''}
 
 ESTRUTURA DO OUTPUT (usa exatamente estes separadores):
 
 === PARTE 1: COPY DO CRIATIVO ===
-${ST.formato === 'Reels' ? 'GANCHO (0 a 3 seg): frase que para o scroll\nDESENVOLVIMENTO (3 a 25 seg): roteiro falado, transformação rápida\nFECHO + CTA (últimos 5 seg):' : ''}
+${ST.formato === 'Reels' ? `ROTEIRO DE REELS DE ALTA CONVERSÃO (segue esta estrutura à risca, é baseada nas referências de maior sucesso em Reels):
+
+REGRAS NÃO NEGOCIÁVEIS DO HOOK (0 a 2 segundos):
+- Máximo 7 palavras no hook, frase curta e direta, nunca "Olá pessoal" ou qualquer introdução.
+- Corte direto para a ação ou para a frase. Zero introdução, zero contexto antes do hook.
+- O hook tem de gerar uma de três reações imediatas: curiosidade não resolvida ("Ninguém te diz isto sobre..."), confronto direto ("Estás a fazer X errado"), ou identificação imediata da dor ("Se isto te acontece, para tudo").
+- Nunca perguntas genéricas tipo "sabias que...". Afirmações diretas funcionam melhor que perguntas.
+
+GANCHO (0 a 2 seg):
+Escreve a frase exata, máx 7 palavras, que vai aparecer em texto grande no ecrã E ser a primeira frase falada. Tem de parar o dedo no scroll.
+
+CONTEXTO RÁPIDO (2 a 6 seg):
+1 frase curta que expande o hook e cria tensão, sem ainda resolver. É a ponte entre o gancho e a entrega de valor.
+
+ENTREGA DE VALOR (6 a 22 seg):
+Aqui o "Ah então é isso, faz muito sentido" tem de acontecer. Estrutura em 2 a 3 pontos curtos e práticos, cada um numerado ou bem demarcado (ex: "Primeiro...", "Segundo..."). Cada ponto entrega uma informação real e aplicável, nunca clichê de coaching. Frases curtas, ritmo rápido, uma ideia por frase. O objetivo é que a pessoa sinta valor genuíno, não promessa vazia.
+
+PROVA OU EXEMPLO (22 a 27 seg):
+Uma frase curta de prova social, exemplo prático, ou demonstração de como isto se aplica na prática. Reforça a credibilidade do que foi dito.
+
+FECHO COM PAYOFF (27 a 32 seg):
+A frase final tem de fechar o loop aberto no gancho e gerar a sensação de "faz tudo sentido agora". É o momento de satisfação cognitiva que faz a pessoa rever o Reel ou seguir a conta.
+
+CTA DE ENGAGEMENT (últimos 2 a 3 seg):
+Nunca "segue para mais dicas". Usa CTA que gera comentário ou guardar, porque é isso que o algoritmo mais valoriza, mais do que likes. Exemplo de padrão: "Comenta [palavra] que te mando [recurso]" ou "Guarda este Reel antes que esqueças disto".
+
+INSTRUÇÕES DE EDIÇÃO (incluir sempre):
+- Legendas na tela em todo o vídeo, a maioria vê sem som.
+- Jump cuts, sem pausas mortas entre frases.
+- Texto do hook em fonte grande, centrado, máximo contraste (branco com contorno preto, ou bloco dourado #B8860B sólido).
+- Sugestão de áudio: indicar se deve usar áudio em alta da plataforma ou voz original.` : ''}
 ${ST.formato === 'Carrossel' ? 'SLIDE 1: headline que prende\nSLIDE 2: problema\nSLIDE 3: solução\nSLIDE 4: transformação\nSLIDE 5: CTA claro' : ''}
 ${ST.formato === 'Estático' ? 'HEADLINE (máx 7 palavras)\nSUBTEXTO (1 a 2 frases)\nCTA:' : ''}
 

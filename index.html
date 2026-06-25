@@ -914,8 +914,13 @@ async function gerarTudo() {
 AUDIÊNCIA DESTE CONTEÚDO: ${aud.publico}.
 ${aud.perspetiva}
 
-IDENTIDADE VISUAL TURBOTRÁFEGO:
-Fundo: preto #1A1A1A. Cor destaque: dourado #B8860B. Tipografia: Chau Philomene One (headlines). Tom: direto, visceral, autoridade técnica, sem clichés de coaching.
+IDENTIDADE VISUAL TURBOTRÁFEGO, REGRA FIXA E NÃO NEGOCIÁVEL:
+Cor de fundo: SEMPRE #1A1A1A (preto). Cor de destaque: SEMPRE #B8860B (dourado). Nunca usar outras cores ou paletas à escolha própria, mesmo que pareçam combinar melhor com o tópico.
+Tipografia: SEMPRE Chau Philomene One para headlines e texto em destaque na imagem. Nunca sugerir ou usar outra fonte.
+Tom: direto, visceral, autoridade técnica, sem clichés de coaching.
+
+ELEMENTOS PROIBIDOS EM QUALQUER TEXTO OU DESIGN GERADO:
+Nunca incluir balões de fala, etiquetas em formato de pílula/balão (rounded pill labels), travessões como elemento decorativo de separação visual, quadrados vazios tipo checkbox, ou qualquer ícone genérico de interface. Estes são elementos de template genérico de IA e não fazem parte da identidade TurboTráfego.
 
 REGRAS DE ESCRITA:
 - Português de Portugal rigoroso. Sem erros ortográficos.
@@ -967,8 +972,10 @@ INSTRUÇÕES DE EDIÇÃO (incluir sempre):
 - Jump cuts, sem pausas mortas entre frases.
 - Texto do hook em fonte grande, centrado, máximo contraste (branco com contorno preto, ou bloco dourado #B8860B sólido).
 - Sugestão de áudio: indicar se deve usar áudio em alta da plataforma ou voz original.` : ''}
-${ST.formato === 'Carrossel' ? 'SLIDE 1: headline que prende\nSLIDE 2: problema\nSLIDE 3: solução\nSLIDE 4: transformação\nSLIDE 5: CTA claro' : ''}
-${ST.formato === 'Estático' ? 'HEADLINE (máx 7 palavras)\nSUBTEXTO (1 a 2 frases)\nCTA:' : ''}
+${ST.formato === 'Carrossel' ? `SLIDE 1: headline que prende\nSLIDE 2: problema\nSLIDE 3: solução\nSLIDE 4: transformação\nSLIDE 5: CTA claro
+Para cada slide, o texto principal fica no terço superior ou central da imagem, nunca colado à base. Nunca usar balões/etiquetas em formato de pílula para categorizar o slide, nunca checkboxes ou quadrados vazios como elemento decorativo, nunca travessão como separador visual dentro do texto.` : ''}
+${ST.formato === 'Estático' ? `HEADLINE (máx 7 palavras)\nSUBTEXTO (1 a 2 frases)\nCTA:
+Texto posicionado no terço superior ou central da imagem, nunca colado à base. Nunca usar balões/etiquetas em formato de pílula, checkboxes ou quadrados vazios, travessão como separador visual.` : ''}
 
 === PARTE 2: LEGENDA COMPLETA ===
 Pronta a publicar. Keyword primária nas primeiras 125 chars. Abre com frase de reconhecimento emocional direto. Desenvolve em 3 a 4 frases. Fecha com CTA.
@@ -982,7 +989,17 @@ Score de otimização X/10 com justificação honesta.
 2 a 3 recomendações extra fora da copy.` : ''}
 
 === PARTE 4: PROMPT VISUAL ===
-Prompt ultra-detalhado em inglês para geração de imagem via IA (Recraft 4.1, Midjourney, Leonardo). Inclui: tipo de imagem (a IA decide o estilo mais adequado ao tópico: fotografia real, tipografia minimalista, ou editorial), composição, iluminação, cores (#1A1A1A preto fundo, #B8860B dourado destaque), mood, aspect ratio ${aspRatio}. Prompt em inglês.`;
+Prompt ultra-detalhado em inglês para geração de imagem via IA (Recraft 4.1, Midjourney, Leonardo, Higgsfield). Estrutura obrigatória do prompt:
+
+1. TIPO DE IMAGEM: a IA decide o estilo mais adequado ao tópico (fotografia real, tipografia minimalista, ou editorial).
+2. COMPOSIÇÃO E ILUMINAÇÃO.
+3. PALETA DE CORES OBRIGATÓRIA: background #1A1A1A (black), accent color #B8860B (gold). Menciona sempre estas duas cores exatas no prompt, nunca outras cores à escolha da IA.
+4. TIPOGRAFIA OBRIGATÓRIA: se o prompt incluir texto na imagem, a fonte tem de ser sempre "Chau Philomene One" (display font, bold, geometric). Menciona sempre esta fonte explicitamente no prompt, nunca outra fonte à escolha da IA.
+5. MARGENS DE SEGURANÇA OBRIGATÓRIAS: todo o texto principal (headline, CTA) tem de ficar posicionado no terço SUPERIOR ou CENTRAL da imagem, nunca colado à margem inferior. Margem de segurança mínima de 12% em todos os lados (topo, base, esquerda, direita) sem nenhum elemento de texto, para evitar corte pela interface do Instagram (ícones de like/comentar/partilhar e barra de legenda cobrem a parte inferior em Reels e Stories). Menciona explicitamente no prompt: "text positioned in upper third or center, minimum 12% safe margin on all sides, especially bottom".
+6. ELEMENTOS PROIBIDOS, NUNCA incluir em nenhuma circunstância: speech bubbles ou balões de fala/texto (rounded pill-shaped labels or tags), em dash ou travessões como elemento gráfico decorativo dentro de frases, checkboxes ou quadrados vazios (empty square checkboxes), ícones genéricos de interface, badges decorativos. O prompt tem de incluir explicitamente esta frase de exclusão: "no speech bubbles, no pill-shaped badges or tags, no dash separators in text, no empty checkbox icons, no generic UI decoration elements, clean minimal composition".
+7. ASPECT RATIO: ${aspRatio}.
+
+Prompt final em inglês, incluindo SEMPRE os pontos 3, 4, 5 e 6 explicitamente escritos, nunca omitidos.`;
 
   const usr = `Nicho: ${ST.nicho}${isNichoMarketing() ? ' (audiência: empresários e empreendedores em geral, não é um sector vertical)' : ''}\nLocalização: ${ST.local}\nTópico: ${ST.topico}\nFormato: ${ST.formato}\nDimensões: ${dimInfo}\nTom: ${ST.tom}\nObjetivo: ${ST.obj}\nData de referência: ${dt.dataCompleta}\n\nPesquisa na web tendências atuais e keywords relevantes para este tópico em Portugal, usando informação verificada e atual à data de referência acima. Nunca uses dados desatualizados ou de anos anteriores como se fossem o presente. Depois gera o conteúdo completo.`;
 
@@ -1031,7 +1048,7 @@ function mostrarCriativo(promptVisual) {
   out.style.display = 'block';
 
   const aspRatio = ST.formato === 'Reels' ? '9:16' : '1:1';
-  const p = promptVisual || `Professional advertising photo for ${ST.nicho} Portugal, dark background #1A1A1A, gold accent #B8860B, cinematic, ${aspRatio}`;
+  const p = promptVisual || `Professional advertising photo for ${ST.nicho} Portugal, dark background #1A1A1A, gold accent #B8860B, headline font Chau Philomene One, text positioned in upper third or center, minimum 12% safe margin on all sides especially bottom, no speech bubbles, no pill-shaped badges or tags, no dash separators in text, no empty checkbox icons, no generic UI decoration elements, clean minimal composition, cinematic, ${aspRatio}`;
   const cleanPrompt = p.replace(/=== PARTE 4.*?===/g, '').replace(/PROMPT VISUAL/g, '').trim();
 
   if (ST.gen === 'prompt-ext') {
